@@ -1,0 +1,45 @@
+import numpy as np
+import matplotlib.pyplot as plt
+import mlpy
+from PIL import Image
+from scipy.misc import imresize
+
+
+
+
+img = Image.open("OriginalDesat.jpg").convert('L')
+training = Image.open("TrainingDataBW.jpg").convert('L')
+f = np.array(img, dtype = 'float32')
+Training = np.array(img, dtype = 'float32')
+
+Training = (Training -128)/128
+f = f - 128
+f = f / 128
+
+print f
+
+np.random.seed(0)
+
+mean1, cov1, n1 = [1,1], [[1,1],[1,2]], 200  # 200 samples of class 0
+x1 = np.random.multivariate_normal(mean1, cov1, n1)
+y1 = np.zeros(n1, dtype=np.int)
+mean2, cov2, n2 = [2.5, 2.5], [[1,0],[0,1]], 300 # 300 samples of class 1
+x2 = np.random.multivariate_normal(mean2, cov2, n2)
+y2 = np.ones(n2, dtype=np.int)
+mean3, cov3, n3 = [5, 8], [[0.5,0],[0,0.5]], 200 # 200 samples of class 2
+x3 = np.random.multivariate_normal(mean3, cov3, n3)
+y3 = 2 * np.ones(n3, dtype=np.int)
+x = np.concatenate((x1, x2, x3), axis=0) # concatenate the samples
+y = np.concatenate((y1, y2, y3))
+da = mlpy.DLDA(delta=0.1)
+da.learn(x, y)
+xmin, xmax = x[:,0].min()-1, x[:,0].max()+1
+ymin, ymax = x[:,1].min()-1, x[:,1].max()+1
+xx, yy = np.meshgrid(np.arange(xmin, xmax, 0.1), np.arange(ymin, ymax, 0.1))
+xnew = np.c_[xx.ravel(), yy.ravel()]
+ynew = da.pred(xnew).reshape(xx.shape)
+fig = plt.figure(1)
+cmap = plt.set_cmap(plt.cm.Paired)
+plot1 = plt.pcolormesh(xx, yy, ynew)
+plot2 = plt.scatter(x[:,0], x[:,1], c=y)
+plt.show()
