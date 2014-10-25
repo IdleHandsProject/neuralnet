@@ -13,7 +13,7 @@ from progressbar import ProgressBar
 
 pbar = ProgressBar()
 pbar2 = ProgressBar()
-totalpoint = 100000
+totalpoint = 300000
 testsize = totalpoint * 2/3
 checksize = totalpoint * 1/3
 print testsize
@@ -116,34 +116,32 @@ print ("Testing prediction")
 fignum = 1
 Y = y
 # fit the model
-#for kernel in ('linear','linear','linear'):
-if fignum < 2:
+for gamma in range(0,10):
     kernel = 'rbf'
     print ("Creating Linear Graph")
-    clf = svm.SVC(kernel=kernel, gamma=0, verbose=2)
+    clf = svm.SVC(kernel=kernel, gamma=gamma, verbose=2, tol=0.1)
     clf.fit(X, y)
 
     # plot the line, the points, and the nearest vectors to the plane
-    plt.figure(fignum, figsize=(4, 3))
+    plt.figure(fignum, figsize=(8, 8))
     plt.clf()
 
-    plt.scatter(clf.support_vectors_[:, 0], clf.support_vectors_[:, 1], 
-s=20,
-                facecolors='none', zorder=10)
+    plt.scatter(clf.support_vectors_[:, 0], clf.support_vectors_[:, 1], s=20, facecolors='none', zorder=10)
     plt.scatter(X[:, 0], X[:, 1], c=Y, zorder=10, cmap=plt.cm.Paired)
 
     plt.axis('tight')
     x_min = 0
     x_max = 900
-    y_min = 1400
+    y_min = 1308
     y_max = 0
 
     XX, YY = np.mgrid[x_min:x_max:200j, y_min:y_max:200j]
+    
     Z = clf.decision_function(np.c_[XX.ravel(), YY.ravel()])
 
     # Put the result into a color plot
     Z = Z.reshape(XX.shape)
-    plt.figure(fignum, figsize=(4, 3))
+    plt.figure(fignum, figsize=(8, 8))
     plt.pcolormesh(XX, YY, Z > 0, cmap=plt.cm.Paired)
     plt.contour(XX, YY, Z, colors=['k', 'k', 'k'], linestyles=['--', '-', '--'],
                 levels=[-.5, 0, .5])
@@ -153,7 +151,7 @@ s=20,
 
     plt.xticks(())
     plt.yticks(())
-    fignum = fignum + 2
+    fignum += 1
 plt.show()
 
 percent = 0
@@ -177,7 +175,7 @@ print ("Drawing Prediction Image - This may take a few minutes")
 x = 0
 for x in pbar2(range(testimagex)):
     for z in range(0, testimagey):
-        prediction[z,x] = clf.predict([[z,x]]) * 255
+        prediction[x,z] = clf.predict([[x,z]]) * 255
 
 
 print prediction
