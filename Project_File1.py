@@ -13,7 +13,7 @@ from progressbar import ProgressBar
 
 pbar = ProgressBar()
 pbar2 = ProgressBar()
-totalpoint = 300000
+totalpoint = 30000
 testsize = totalpoint * 2/3
 checksize = totalpoint * 1/3
 print testsize
@@ -42,8 +42,8 @@ OrigTrain = Training
 
 Training = Training.flatten()
 
-w = np.zeros(testsize, dtype=np.int)
-l = np.zeros(testsize, dtype=np.int)
+w = np.zeros(testsize, dtype=np.float)
+l = np.zeros(testsize, dtype=np.float)
 newtrain = np.zeros(testsize, dtype=np.int)
 x = 0
 lastx = 0
@@ -98,10 +98,13 @@ print coord[:50:1]
 
 ##coord = coord.reshape(testsize,2)
 ##print coord 
-print coord[:50:1]
+
  
 ##print newtrain[:testsize:1]
-X = coord[:testsize:1]
+J = coord[:testsize:1] / 100
+X = J
+print X
+
 y = newtrain[:testsize:1]
 
 
@@ -116,7 +119,7 @@ print ("Testing prediction")
 fignum = 1
 Y = y
 # fit the model
-for gamma in range(0,10):
+for gamma in range(0,4):
     kernel = 'rbf'
     print ("Creating Linear Graph")
     clf = svm.SVC(kernel=kernel, gamma=gamma, verbose=2, tol=0.1)
@@ -131,8 +134,8 @@ for gamma in range(0,10):
 
     plt.axis('tight')
     x_min = 0
-    x_max = 900
-    y_min = 1308
+    x_max = 900/100
+    y_min = 1308/100
     y_max = 0
 
     XX, YY = np.mgrid[x_min:x_max:200j, y_min:y_max:200j]
@@ -154,12 +157,17 @@ for gamma in range(0,10):
     fignum += 1
 plt.show()
 
+ew = np.zeros(testsize, dtype=np.float)
+el = np.zeros(testsize, dtype=np.float)
+
 percent = 0
 print ("Checking Error")
 for e in pbar(range(checksize)):
     ew = randint(11,OrigTrain.shape[0]-11)
     el = randint(11,OrigTrain.shape[1]-11)
-    check = clf.predict([[ew,el]])[0]
+    el /= 100
+    ew /= 100
+    check = clf.predict([[ew,el]])
     if check == OrigTrain[ew,el]:
         percent += 1
     
@@ -175,7 +183,9 @@ print ("Drawing Prediction Image - This may take a few minutes")
 x = 0
 for x in pbar2(range(testimagex)):
     for z in range(0, testimagey):
-        prediction[x,z] = clf.predict([[x,z]]) * 255
+        xF = float(x)
+        zF = float(z)
+        prediction[x,z] = clf.predict([[xF,zF]]) * 255
 
 
 print prediction
