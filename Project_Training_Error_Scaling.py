@@ -206,14 +206,14 @@ cv = cross_validation.ShuffleSplit(X.shape[0], n_iter=100,
                                    test_size=0.2, random_state=0)
 
 estimator = GaussianNB()
-plot_learning_curve(estimator, title, X, y, ylim=(0, 1.), cv=cv, n_jobs=4)
+plot_learning_curve(estimator, title, X, y, ylim=(0.4, 0.6), cv=cv, n_jobs=4)
 
 title = "Learning Curves (SVM, RBF kernel, $\gamma=0.001$)"
 # SVC is more expensive so we do a lower number of CV iterations:
 cv = cross_validation.ShuffleSplit(X.shape[0], n_iter=10,
                                    test_size=0.2, random_state=0)
 estimator = SVC(gamma=0.001)
-plot_learning_curve(estimator, title, X, y, (0, 1.01), cv=cv, n_jobs=4)
+plot_learning_curve(estimator, title, X, y, (0.4, 0.6), cv=cv, n_jobs=4)
 
 plt.show()
 
