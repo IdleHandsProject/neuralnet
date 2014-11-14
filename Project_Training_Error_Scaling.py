@@ -20,17 +20,22 @@ np.random.seed(0)
 import time
 from progressbar import ProgressBar
 
+####OPTIONS####
+overSSH = 1
+testGraphs =1
+drawImage = 1
+gamma = 500
+C = 100000
 
-testGraphs = 0
 pbar = ProgressBar()
 pbar2 = ProgressBar()
-totalpoint = 10000
+totalpoint = 20000
 testsize = totalpoint * 2/3
 checksize = totalpoint * 1/3
 print testsize
 print checksize
 
-training = Image.open("traindata.jpg").convert('L')
+training = Image.open("TrainingData.jpg").convert('L')
 th = 100
 edge = training.point(lambda i: i < th and 255)
 edge = edge.filter(ImageFilter.FIND_EDGES)
@@ -41,6 +46,8 @@ print edge
 
 Training = np.array(training, dtype = 'uint8')
 
+
+
 print Training
 Training = (Training -128)/128
 OrigTrain = Training
@@ -48,7 +55,8 @@ OrigTrain = Training
 
 
 Training = Training.flatten()
-
+print Training 
+time.sleep(5)
 w = np.zeros(testsize, dtype=np.float)
 l = np.zeros(testsize, dtype=np.float)
 newtrain = np.zeros(testsize, dtype=np.int)
@@ -102,7 +110,6 @@ l = l.reshape(testsize,1)
 
 coord = np.concatenate((l,w),axis=1)
 print coord[:50:1]
-
 ##coord = coord.reshape(testsize,2)
 ##print coord 
 
@@ -124,7 +131,7 @@ min_max_scaler = preprocessing.MinMaxScaler()
 
 X = min_max_scaler.fit_transform(X)
 ##y = min_max_scaler.fit_transform(y)
-fignum = 1
+fignum = 3
 Y = y
 
 
@@ -206,23 +213,17 @@ if (testGraphs > 0):
 	title = "Learning Curves (Naive Bayes)"
 	# Cross validation with 100 iterations to get smoother mean test and train
 	# score curves, each time with 20% data randomly selected as a validation set.
-	print ("Still Working")
-	time.sleep(3)
-	cv = cross_validation.ShuffleSplit(X.shape[0], n_iter=100,
-									   test_size=0.2, random_state=0)
+	cv = cross_validation.ShuffleSplit(X.shape[0], n_iter=100, test_size=0.2, random_state=0)
 
 	estimator = GaussianNB()
-	plot_learning_curve(estimator, title, X, y, ylim=(0.4, 0.6), cv=cv, n_jobs=4)
-	print ("Still Working")
-	time.sleep(3)
-	title = "Learning Curves (SVM, RBF kernel, $\gamma=0.001$)"
+	plot_learning_curve(estimator, title, X, y, ylim=(0, 1), cv=cv, n_jobs=4)
+	title = "Learning Curves (SVM, RBF kernel, $\gamma=$,gamma)"
 	# SVC is more expensive so we do a lower number of CV iterations:
-	cv = cross_validation.ShuffleSplit(X.shape[0], n_iter=10,
-									   test_size=0.2, random_state=0)
-	estimator = SVC(gamma=0.001)
-	plot_learning_curve(estimator, title, X, y, (0.4, 0.6), cv=cv, n_jobs=4)
-
-	plt.show()
+	cv = cross_validation.ShuffleSplit(X.shape[0], n_iter=10,test_size=0.2, random_state=0)
+	estimator = SVC(C=C,gamma=gamma,verbose=1)
+	plot_learning_curve(estimator, title, X, y, (0.85, 1.05), cv=cv, n_jobs=4)
+        if (overSSH > 0):
+	    print ("DONE!")
 
 ##################################TESTING###
 
@@ -231,10 +232,10 @@ if (testGraphs > 0):
 
 
 # fit the model
-for gamma in range(0,3):
+for looping in range(0,1):
     kernel = 'rbf'
     print ("Creating Linear Graph")
-    clf = svm.SVC(kernel=kernel, gamma=gamma, verbose=2, cache_size=1000)
+    clf = svm.SVC(C=C, kernel=kernel, gamma=gamma, verbose=2, cache_size=1000)
     clf.fit(X, y)
 
     # plot the line, the points, and the nearest vectors to the plane
@@ -267,13 +268,14 @@ for gamma in range(0,3):
     plt.xticks(())
     plt.yticks(())
     fignum += 1
-plt.figure(1)
-plt.savefig('gamma1.png')
-plt.figure(2)
-plt.savefig('gamma2.png')
-plt.figure(3)
-plt.savefig('gamma3.png')
-plt.show()
+##plt.figure(1)
+##plt.savefig('gamma1.png')
+##plt.figure(2)
+##plt.savefig('gamma2.png')
+##plt.figure(3)
+##plt.savefig('gamma3.png')
+if (overSSH > 0):
+    plt.show()
 
 ew = np.zeros(testsize, dtype=np.float)
 el = np.zeros(testsize, dtype=np.float)
@@ -292,7 +294,7 @@ for e in pbar(range(checksize)):
     
  
 acc = float(percent) / checksize * 100
-print ("The Percent Error is")
+print ("The Percent Accuracy is")
 print acc 
 
 
@@ -300,24 +302,24 @@ print acc
 
 
 
+if (drawImage > 0):
+    testimagex = 1307
+    testimagey = 878
+    prediction = np.ones( (testimagex,testimagey), dtype=np.int)
+    print ("Drawing Prediction Image - This may take a few minutes")
+    x = 0
+    for x in pbar2(range(testimagex)):
+        for z in range(0, testimagey):
+            xF = float(x)
+            zF = float(z)
+            prediction[x,z] = clf.predict([[(xF/100),(zF/100)]]) * 255
 
-testimagex = 1307
-testimagey = 878
-prediction = np.ones( (testimagex,testimagey), dtype=np.int)
-print ("Drawing Prediction Image - This may take a few minutes")
-x = 0
-for x in pbar2(range(testimagex)):
-    for z in range(0, testimagey):
-        xF = float(x)
-        zF = float(z)
-        prediction[x,z] = clf.predict([[(xF/100),(zF/100)]]) * 255
 
+    print prediction.shape
+    print OrigTrain.shape
+    time.sleep(2)
 
-print prediction.shape
-print OrigTrain.shape
-time.sleep(2)
-
-img = Image.fromarray(prediction, mode='L')
-img.save("predictedimage.png")
-img2 = Image.fromarray(OrigTrain, mode='L')
-img2.save("OriginalTrain.png")
+    img = Image.fromarray(prediction, mode='L')
+    img.save("predictedimage.png")
+    img2 = Image.fromarray(OrigTrain, mode='L')
+    img2.save("OriginalTrain.png")
