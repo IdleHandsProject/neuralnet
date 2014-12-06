@@ -15,6 +15,7 @@ from sklearn.naive_bayes import GaussianNB
 from sklearn.learning_curve import learning_curve
 from sklearn import preprocessing
 from sklearn.metrics import mean_squared_error
+from numpy import genfromtxt
 
 np.random.seed(0)
 
@@ -32,8 +33,8 @@ def box_range(start, end, step):
 		start += step
 
 epochs = 0
-max_points = 36000
-epoch_num = 2000
+max_points = 15000
+epoch_num = 1000
 MSE = np.zeros((((max_points / epoch_num),1)))
 
 ####OPTIONS####
@@ -44,7 +45,10 @@ drawImage = 0
 gamma = 200
 C = 100000
 
+
 ###############
+
+
 
 for epochs in epoch_range(epoch_num, max_points, epoch_num):
 	pbar = ProgressBar()
@@ -55,7 +59,82 @@ for epochs in epoch_range(epoch_num, max_points, epoch_num):
 	checksize = totalpoint * 1/3
 	#print testsize
 	#print checksize
+	
+		
+	########################################### NEW DATA COLLECTION
 
+	print ("Gathering CSV Data")
+	image_data = genfromtxt('Data_List.csv', delimiter=',')
+	image_data = np.array(image_data, dtype= np.float)
+
+	distance_data = image_data[:,[3]]
+	xy_data = image_data[:,:3] 
+	training_data = image_data[:,[2]]
+
+
+
+
+	Training = np.zeros([15000,3], dtype=np.float)
+	last_range = 0
+	point_num = 0
+	point_find = 0
+	lastpoint_find = 0 
+	set_distance = [0,5,25,50,75,100]
+	set_separation = [5,20,25,25,25,185] 
+	set_size =  [2500,4500,3500,2000,1500,1000]
+	set_size = np.array(set_size)
+	for set in range(0,set_size.size):
+		point_num += set_size[set]
+		print "finding points %s to %s" %(last_range, point_num)
+		print "number of points %s" %(point_num - last_range)
+
+		amount = (point_num - last_range)
+		while point_find < point_num:
+		#for point_find in range(last_range,point_num):
+			print "point_find %s" %point_find
+			point = randint(0,1147545)
+			if (set_distance[set] < distance_data[point]) or ( distance_data[point]< set_distance[set]+set_separation[set]) :
+				if point_find % 2 > 0:
+					if  training_data[point] > 0:
+						point_find = lastpoint_find
+						print ("Not Black")
+					else:
+						print xy_data[point]
+						Training[point_find] = xy_data[point]
+						point_find += 1
+						#time.sleep(1)
+						
+						
+				else:
+					if  training_data[point] < 0:
+						point_find = lastpoint_find
+						print ("Not White")
+					else:
+						print xy_data[point]
+						Training[point_find] = xy_data[point]
+						point_find += 1
+						#time.sleep(1)
+				
+			lastpoint_find = point_find
+		
+		last_range = point_num
+			
+			
+	print Training.shape
+	time.sleep(1)
+
+	X = Training[:,:2]  / 1307
+	print X
+	y = Training[:,[2]].flatten()
+	print y
+	#min_max_scaler = preprocessing.MinMaxScaler()
+	#y = min_max_scaler.fit_transform(y)
+	fignum = 3
+	Y = y
+	#####################################################3
+	
+	
+	'''
 	training = Image.open("TrainingData.jpg").convert('L')
 	th = 100
 	edge = training.point(lambda i: i < th and 255)
@@ -159,18 +238,16 @@ for epochs in epoch_range(epoch_num, max_points, epoch_num):
 	
 	y = newtrain[:testsize:1]
 	#print y 
-	
+	'''
 
 
 	#print ("Running Support Vector Machine")
 	#print ("...")
 	 
 	#print ("Testing prediction")
-	min_max_scaler = preprocessing.MinMaxScaler()
+	
 	#X = min_max_scaler.fit_transform(X)
-	##y = min_max_scaler.fit_transform(y)
-	fignum = 3
-	Y = y
+	
 
 
 	################################TESTING######################################
@@ -271,7 +348,7 @@ for epochs in epoch_range(epoch_num, max_points, epoch_num):
 	kernel = 'rbf'
 	print ("Creating SVM RBF")
 	training_start_time = time.time()
-	clf = svm.SVC(C=C, kernel=kernel, gamma=gamma, verbose=0, cache_size=1000)
+	clf = svm.SVC(C=C, kernel=kernel, gamma=gamma, verbose=1, cache_size=1000)
 	clf.fit(X, y)
 	training_time = time.time() - training_start_time
 	print (training_time)
@@ -332,18 +409,17 @@ for epochs in epoch_range(epoch_num, max_points, epoch_num):
 	OriginalValue = np.empty(checksize, dtype='uint8')
 	#print ("Checking Error")
 	for e in pbar(range(checksize)):
-		ew = randint(11,OrigTrain.shape[0]-11)
-		el = randint(11,OrigTrain.shape[1]-11)
+		randcheck = randint(0,1147545)
 		
-		OriginalValue[e] = OrigTrain[ew,el]
-		el /= 1307.00
-		ew /= 1307.00
+		OriginalValue[e] = training_data[randcheck,[2]]
+		#el /= 1307.00
+		#ew /= 1307.00
 		
 		
 		#ew = (((ew) * 1) / OrigTrain.shape[0])
 		#el = (((el) * 1) / OrigTrain.shape[0])
 		
-		check[e] = clf.predict([[el,ew]])
+		check[e] = clf.predict([Training[randcheck,:2]])
 		
 		if check[e] == OriginalValue[e]:
 			percent += 1
