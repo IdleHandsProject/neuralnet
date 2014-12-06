@@ -32,6 +32,10 @@ def box_range(start, end, step):
 		yield start
 		start += step
 
+def swap_cols(arr, frm, to):
+    arr[:,[frm, to]] = arr[:,[to, frm]]
+		
+		
 epochs = 0
 max_points = 15000
 epoch_num = 1000
@@ -39,7 +43,7 @@ MSE = np.zeros((((max_points / epoch_num),1)))
 
 ####OPTIONS####
 
-overSSH = 0
+overSSH = 1
 testGraphs = 0
 drawImage = 0
 gamma = 200
@@ -66,11 +70,11 @@ for epochs in epoch_range(epoch_num, max_points, epoch_num):
 	print ("Gathering CSV Data")
 	image_data = genfromtxt('Data_List.csv', delimiter=',')
 	image_data = np.array(image_data, dtype= np.float)
-
+	swap_cols(image_data, 0, 1)
 	distance_data = image_data[:,[3]]
 	xy_data = image_data[:,:3] 
 	training_data = image_data[:,[2]]
-
+	
 
 
 
@@ -123,9 +127,10 @@ for epochs in epoch_range(epoch_num, max_points, epoch_num):
 	print Training.shape
 	time.sleep(1)
 
-	X = Training[:,:2]  / 1307
+	X = Training[:(Training.shape[0]*2/3),:2]  / 1307
+	
+	y = Training[:(Training.shape[0]*2/3),[2]].flatten()
 	print X
-	y = Training[:,[2]].flatten()
 	print y
 	#min_max_scaler = preprocessing.MinMaxScaler()
 	#y = min_max_scaler.fit_transform(y)
@@ -369,7 +374,7 @@ for epochs in epoch_range(epoch_num, max_points, epoch_num):
 
 			plt.axis('tight')
 			x_min = 0
-			x_max = 1   ##878/100 or 1
+			x_max =  0.671  ##878/100 or 1
 			y_min = 1   ##1307/100  or 1
 			y_max = 0
 
@@ -411,7 +416,7 @@ for epochs in epoch_range(epoch_num, max_points, epoch_num):
 	for e in pbar(range(checksize)):
 		randcheck = randint(0,1147545)
 		
-		OriginalValue[e] = training_data[randcheck,[2]]
+		OriginalValue[e] = training_data[randcheck]
 		#el /= 1307.00
 		#ew /= 1307.00
 		
@@ -419,7 +424,7 @@ for epochs in epoch_range(epoch_num, max_points, epoch_num):
 		#ew = (((ew) * 1) / OrigTrain.shape[0])
 		#el = (((el) * 1) / OrigTrain.shape[0])
 		
-		check[e] = clf.predict([Training[randcheck,:2]])
+		check[e] = clf.predict([image_data[randcheck,:2]])
 		
 		if check[e] == OriginalValue[e]:
 			percent += 1
