@@ -43,7 +43,7 @@ MSE = np.zeros((((max_points / epoch_num),1)))
 
 ####OPTIONS####
 
-overSSH = 1
+overSSH = 0
 testGraphs = 0
 drawImage = 0
 gamma = 200
@@ -51,53 +51,55 @@ C = 100000
 
 
 ###############
+print ("Gathering CSV Data")
+image_data = genfromtxt('Data_List.csv', delimiter=',')
+image_data = np.array(image_data, dtype= np.float)
+swap_cols(image_data, 0, 1)
+distance_data = image_data[:,[3]]
+xy_data = image_data[:,:3] 
+training_data = image_data[:,[2]]
 
-
-
+	########################################### NEW DATA COLLECTION
 for epochs in epoch_range(epoch_num, max_points, epoch_num):
 	pbar = ProgressBar()
 	pbar2 = ProgressBar()
-	totalpoint = epochs
-	epochs = max_points
+	totalpoint =epochs
+
 	testsize = totalpoint * 2/3
 	checksize = totalpoint * 1/3
 	#print testsize
 	#print checksize
 	
 		
-	########################################### NEW DATA COLLECTION
 
-	print ("Gathering CSV Data")
-	image_data = genfromtxt('Data_List.csv', delimiter=',')
-	image_data = np.array(image_data, dtype= np.float)
-	swap_cols(image_data, 0, 1)
-	distance_data = image_data[:,[3]]
-	xy_data = image_data[:,:3] 
-	training_data = image_data[:,[2]]
+
+
 	
 
 
 
-	Training = np.zeros([15000,3], dtype=np.float)
+	Training = np.zeros([testsize,3], dtype=np.float)
 	last_range = 0
 	point_num = 0
 	point_find = 0
 	lastpoint_find = 0 
 	set_distance = [0,5,25,50,75,100]
 	set_separation = [5,20,25,25,25,185] 
-	set_size =  [2500,4500,3500,2000,1500,1000]
+	set_size =  [testsize * 0.167,testsize*0.30,testsize*0.233,testsize*0.133,testsize*0.100,testsize*0.067]
 	set_size = np.array(set_size)
+	print set_size
 	for set in range(0,set_size.size):
 		point_num += set_size[set]
 		print "finding points %s to %s" %(last_range, point_num)
 		print "number of points %s" %(point_num - last_range)
-
-		amount = (point_num - last_range)
+		
+		if point_num > testsize:
+			point_num=testsize
 		while point_find < point_num:
 		#for point_find in range(last_range,point_num):
 			print "point_find %s" %point_find
 			point = randint(0,1147545)
-			if (set_distance[set] < distance_data[point]) or ( distance_data[point]< set_distance[set]+set_separation[set]) :
+			if (set_distance[set] < distance_data[point]) and ( distance_data[point]< set_distance[set]+set_separation[set]) :
 				if point_find % 2 > 0:
 					if  training_data[point] > 0:
 						point_find = lastpoint_find
@@ -120,16 +122,16 @@ for epochs in epoch_range(epoch_num, max_points, epoch_num):
 						#time.sleep(1)
 				
 			lastpoint_find = point_find
-		
+			
 		last_range = point_num
+		
 			
-			
-	print Training.shape
+	
 	time.sleep(1)
 
-	X = Training[:(Training.shape[0]*2/3),:2]  / 1307
+	X = Training[:(Training.shape[0]*3/3),:2]  / 1307
 	
-	y = Training[:(Training.shape[0]*2/3),[2]].flatten()
+	y = Training[:(Training.shape[0]*3/3),[2]].flatten()
 	print X
 	print y
 	#min_max_scaler = preprocessing.MinMaxScaler()
@@ -410,13 +412,14 @@ for epochs in epoch_range(epoch_num, max_points, epoch_num):
 
 	percent = 0
 	e = 0
-	check = np.empty(checksize, dtype='uint8')
-	OriginalValue = np.empty(checksize, dtype='uint8')
+	check = np.zeros(checksize, dtype='int8')
+	OriginalValue = np.zeros(checksize, dtype='int8')
 	#print ("Checking Error")
 	for e in pbar(range(checksize)):
 		randcheck = randint(0,1147545)
 		
 		OriginalValue[e] = training_data[randcheck]
+		
 		#el /= 1307.00
 		#ew /= 1307.00
 		
@@ -424,7 +427,7 @@ for epochs in epoch_range(epoch_num, max_points, epoch_num):
 		#ew = (((ew) * 1) / OrigTrain.shape[0])
 		#el = (((el) * 1) / OrigTrain.shape[0])
 		
-		check[e] = clf.predict([image_data[randcheck,:2]])
+		check[e] = clf.predict([image_data[randcheck,:2]/1307])
 		
 		if check[e] == OriginalValue[e]:
 			percent += 1
