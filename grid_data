@@ -1,0 +1,22 @@
+0.976 (+/-0.002) for {'kernel': 'rbf', 'C': 10000, 'gamma': 100}
+0.964 (+/-0.003) for {'kernel': 'rbf', 'C': 10000, 'gamma': 50}
+0.952 (+/-0.005) for {'kernel': 'rbf', 'C': 10000, 'gamma': 25}
+0.804 (+/-0.006) for {'kernel': 'rbf', 'C': 10000, 'gamma': 1}
+0.672 (+/-0.016) for {'kernel': 'rbf', 'C': 10000, 'gamma': 0.1}
+0.978 (+/-0.002) for {'kernel': 'rbf', 'C': 100000, 'gamma': 100}
+0.972 (+/-0.003) for {'kernel': 'rbf', 'C': 100000, 'gamma': 50}
+0.966 (+/-0.002) for {'kernel': 'rbf', 'C': 100000, 'gamma': 25}
+0.838 (+/-0.004) for {'kernel': 'rbf', 'C': 100000, 'gamma': 1}
+0.670 (+/-0.005) for {'kernel': 'rbf', 'C': 100000, 'gamma': 0.1}
+0.973 (+/-0.001) for {'kernel': 'rbf', 'C': 200000, 'gamma': 100}
+0.974 (+/-0.002) for {'kernel': 'rbf', 'C': 200000, 'gamma': 50}
+0.967 (+/-0.002) for {'kernel': 'rbf', 'C': 200000, 'gamma': 25}
+0.847 (+/-0.003) for {'kernel': 'rbf', 'C': 200000, 'gamma': 1}
+0.679 (+/-0.007) for {'kernel': 'rbf', 'C': 200000, 'gamma': 0.1}
+0.973 (+/-0.001) for {'kernel': 'rbf', 'C': 300000, 'gamma': 100}
+0.975 (+/-0.002) for {'kernel': 'rbf', 'C': 300000, 'gamma': 50}
+0.968 (+/-0.003) for {'kernel': 'rbf', 'C': 300000, 'gamma': 25}
+0.853 (+/-0.003) for {'kernel': 'rbf', 'C': 300000, 'gamma': 1}
+0.687 (+/-0.005) for {'kernel': 'rbf', 'C': 300000, 'gamma': 0.1}
+
+
